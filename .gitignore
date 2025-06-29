@@ -2,16 +2,4 @@ backend/myvenv/
 backend/__pycache__/
 backend/api_routes/__pycache__/
 backend/models/__pycache__/
-.vscode/
-.vscode-test/
-out/
 node_modules/
-src/
-.yarnrc
-esbuild.js
-vsc-extension-quickstart.md
-**/tsconfig.json
-**/eslint.config.mjs
-**/*.map
-**/*.ts
-**/.vscode-test.*
