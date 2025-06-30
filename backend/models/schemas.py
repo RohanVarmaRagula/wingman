@@ -26,10 +26,11 @@ class SuggestFixesResponse(BaseModel):
 class GenerateTestCasesRequest(BaseModel):
     code: str
     code_explanation: Optional[str] = None
+    num_testcases: int
     language: Optional[str] = "python"
     
 class TestCase(BaseModel):
-    input: str
+    input: dict
     expected_output: str
     explanation: Optional[str] = None
         
@@ -44,7 +45,7 @@ class CodeWalkthroughRequest(BaseModel):
 
 class CodeSegmentExplanation(BaseModel):
     segment: str
-    step: List[str]
+    step: str
 
 class CodeWalkthroughResponse(BaseModel):
     walkthrough: List[CodeSegmentExplanation]
