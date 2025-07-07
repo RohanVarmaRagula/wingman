@@ -1,14 +1,11 @@
-from langchain_ollama import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from typing import Optional
 from models.schemas import GenerateTestCasesResponse
+from llms.llm_providers import get_llm
 
-def explain_errors(code:str, num_testcases:int, code_explanation: Optional[str] = None, language:Optional[str]="python"):
-    model=ChatOllama(
-        model="codellama:7b",
-        temperature=0.7
-    )
+def generate_testcases(code:str, num_testcases:int, code_explanation: Optional[str] = None, language:Optional[str]="python"):
+    model=get_llm(provider="ollama", model="codellama:7b")
     prompt_template = ChatPromptTemplate.from_messages([
         ("system", """
             You are an AI agent that reads a code snippet and, if provided, its explanation.
@@ -59,4 +56,4 @@ if __name__ == "__main__":
         return a+b
     """
     code_explanation="Addition of two numbers."
-    print(explain_errors(code=code, num_testcases=5, code_explanation=code_explanation))
+    print(generate_testcases(code=code, num_testcases=5, code_explanation=code_explanation))

@@ -1,14 +1,11 @@
-from langchain_ollama import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from typing import Optional
 from models.schemas import CodeWalkthroughResponse
+from llms.llm_providers import get_llm
 
-def explain_errors(code:str, focus_on:Optional[str]=None , language:Optional[str]="python"):
-    model=ChatOllama(
-        model="codellama:7b",
-        temperature=0.7
-    )
+def code_walkthrough(code:str, focus_on:Optional[str]=None , language:Optional[str]="python"):
+    model=get_llm(provider="ollama", model="codellama:7b")
     prompt_template = ChatPromptTemplate.from_messages([
         ("system", """
             You are an AI agent that reads a code snippet and explains its functionality in a structured walkthrough format.
@@ -58,4 +55,4 @@ if __name__ == "__main__":
             print(a, end=" ")
             a, b = b, a + b
     """
-    print(explain_errors(code))
+    print(code_walkthrough(code))
