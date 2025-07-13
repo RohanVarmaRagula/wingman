@@ -6,10 +6,10 @@ router = APIRouter()
 
 @router.post("/generate-testcases", response_model=GenerateTestCasesResponse)
 async def generate_testcases(req: GenerateTestCasesRequest):
-    code=req["code"]
-    code_explanation=req["code_explanation"]
-    num_testcases=req["num_testcases"]
-    language=req["language"]
+    code=req.code
+    code_explanation=req.code_explanation
+    num_testcases=req.num_testcases
+    language=req.language
     
     return generate_testcases_(
         code=code,

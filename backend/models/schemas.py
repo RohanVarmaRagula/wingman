@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 #1. Explain Errors
 class ExplainErrorsRequest(BaseModel):
@@ -26,16 +26,16 @@ class SuggestFixesResponse(BaseModel):
 class GenerateTestCasesRequest(BaseModel):
     code: str
     code_explanation: Optional[str] = None
-    num_testcases: int
+    num_testcases: str
     language: Optional[str] = "python"
     
 class TestCase(BaseModel):
-    input: dict
+    input: Dict[str, str]
     expected_output: str
     explanation: Optional[str] = None
         
 class GenerateTestCasesResponse(BaseModel):
-    test_cases: List[TestCase]
+    testcases: List[TestCase]
     
 #4. Code Walkthrough
 class CodeWalkthroughRequest(BaseModel):

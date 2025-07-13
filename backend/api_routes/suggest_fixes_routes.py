@@ -6,9 +6,9 @@ router = APIRouter()
 
 @router.post("/suggest-fixes", response_model=SuggestFixesResponse)
 async def suggest_fixes(req: SuggestFixesRequest):
-    code=req["code"]
-    errors=req["error_message"]
-    language=req["language"]
+    code=req.code
+    errors=req.error_message
+    language=req.language
     
     return suggest_fixes_(
         code=code,

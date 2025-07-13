@@ -5,7 +5,7 @@ from models.schemas import ExplainErrorsResponse
 from llms.llm_providers import get_llm
 
 def explain_errors(code:str, error_message:str, language:Optional[str]="python"):
-    model=get_llm(provider="ollama", model="codellama:7b")
+    model=get_llm(provider="ollama", model="gemma:7b")
     prompt_template = ChatPromptTemplate.from_messages([
         ("system", """
             You are an AI agent that reads a code snippet and the error message it generated.

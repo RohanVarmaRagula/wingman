@@ -6,9 +6,9 @@ router = APIRouter()
 
 @router.post("/code-walkthrough", response_model=CodeWalkthroughResponse)
 async def code_walkthrough(req: CodeWalkthroughRequest):
-    code = req["code"]
-    focus_on = req["focus_on"]
-    language = req["language"]
+    code = req.code
+    focus_on = req.focus_on
+    language = req.language
     return code_walkthrough_(
         code=code,
         focus_on=focus_on,

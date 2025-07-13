@@ -6,9 +6,9 @@ router = APIRouter()
 
 @router.post("/explain-errors", response_model=ExplainErrorsResponse)
 async def explain_errors(req: ExplainErrorsRequest):
-    code=req["code"]
-    errors=req["error_message"]
-    language=req["language"]
+    code=req.code
+    errors=req.error_message
+    language=req.language
     
     return explain_errors_(
         code=code,

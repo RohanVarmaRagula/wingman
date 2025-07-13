@@ -5,14 +5,14 @@ from models.schemas import GenerateTestCasesResponse
 from llms.llm_providers import get_llm
 
 def generate_testcases(code:str, num_testcases:int, code_explanation: Optional[str] = None, language:Optional[str]="python"):
-    model=get_llm(provider="ollama", model="codellama:7b")
+    model=get_llm(provider="ollama", model="gemma:7b")
     prompt_template = ChatPromptTemplate.from_messages([
         ("system", """
             You are an AI agent that reads a code snippet and, if provided, its explanation.
             Your task is to generate exactly {n} test cases for the given code.
             Return your output strictly in the following JSON format:
             {{
-            "testcase": [
+            "testcases": [
                 {{
                 "input": <python dictionary including all the parameters>,
                 "expected_output": "<expected output for the test case>",
@@ -35,6 +35,7 @@ def generate_testcases(code:str, num_testcases:int, code_explanation: Optional[s
             Important:
             - Return only a valid JSON object.
             - Do not add any prose or commentary outside the JSON.
+            - Ensure all dictionary values and expected_output are strings.
         """)
     ])
 
@@ -47,7 +48,9 @@ def generate_testcases(code:str, num_testcases:int, code_explanation: Optional[s
         "code":code,
         "code_explanation":code_explanation
     })
-    
+    for test_case in response['testcases']:
+        test_case['input'] = {k: str(v) for k, v in test_case['input'].items()}
+        test_case['expected_output'] = str(test_case['expected_output'])
     return response
 
 if __name__ == "__main__":

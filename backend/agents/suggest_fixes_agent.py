@@ -7,7 +7,7 @@ from typing import List
 import difflib
 
 def suggest_fixes(code:str, error_message:str, language:Optional[str]="python"):
-    model=get_llm(provider="ollama", model="codellama:7b")
+    model=get_llm(provider="ollama", model="gemma:7b")
     prompt_template = ChatPromptTemplate.from_messages([
         ("system", """
             You are an AI agent that reads a code snippet and the error message it generated.
