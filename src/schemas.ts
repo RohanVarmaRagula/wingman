@@ -19,6 +19,7 @@ export interface ExplainErrorsResponse{
 export interface SuggestFixesRequest{
     code: string,
     error_message: string,
+    user_request: string
     language?: string
 }
 

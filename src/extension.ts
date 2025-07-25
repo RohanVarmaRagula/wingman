@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import axios, { create } from 'axios';
+import axios from 'axios';
 import {CodeWalkthroughRequest, CodeWalkthroughResponse, GenerateTestCasesRequest, GenerateTestCasesResponse ,ExplainErrorsRequest, ExplainErrorsResponse,SuggestFixesRequest, SuggestFixesResponse} from './schemas';
 import * as path from 'path';
 import { exec } from 'child_process';
@@ -215,16 +215,13 @@ export function activate(context: vscode.ExtensionContext) {
 		output.appendLine(`🧪 Running your code: ...`);
 
 		const [errorMessage, stdoutMessage, stderrMessage] = await runUserCode(editor);
-		output.appendLine('Error :' + errorMessage) ;
-		output.appendLine('Stderr :' + stderrMessage);
-		output.appendLine('Stdout : ' + stdoutMessage);
 		if (!(errorMessage?.trim() || stderrMessage?.trim())) {
 			vscode.window.showInformationMessage('✅ Your code is already perfect.');
 			updateStatusBar(WingmanState.Idle);
 			return;
 		}
 		try {
-			const payload: SuggestFixesRequest = {
+			const payload: ExplainErrorsRequest = {
 				code: text,
 				error_message: errorMessage || stderrMessage || stdoutMessage,
 				language: editor.document.languageId
@@ -254,11 +251,153 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 /////////////////////////////// explain errors ////////////////////////////////////////////////
-	
+
+/////////////////////////////// suggest fixes ////////////////////////////////////////////////
+const suggestFixes = vscode.commands.registerCommand('wingman.suggestFixes', async () => {
+	updateStatusBar(WingmanState.Running);
+    const editor = vscode.window.activeTextEditor;
+
+    if (!editor) {
+        vscode.window.showErrorMessage('No active editor found!');
+        updateStatusBar(WingmanState.Idle);
+        return;
+    }
+
+    const text = editor.document.getText();
+    if (!text) {
+        vscode.window.showWarningMessage('No text found!');
+        updateStatusBar(WingmanState.Idle);
+        return;
+    }
+
+    const userChoice = await vscode.window.showInformationMessage(
+        "Do you want Wingman to run your code to check for errors?",
+        { modal: true },
+        "Yes", "No"
+    );
+
+    if (userChoice !== "Yes") {
+        vscode.window.showInformationMessage("Wingman cancelled the check.");
+        updateStatusBar(WingmanState.Idle);
+        return;
+    }
+
+    const panel = vscode.window.createWebviewPanel(
+        'wingmanFixes',
+        'Wingman Fix Suggestions',
+        vscode.ViewColumn.Beside,
+        { enableScripts: true }
+    );
+
+    panel.webview.html = '<html><body><h3>🧪 Running your code...</h3></body></html>';
+
+    const [errorMessage, stdoutMessage, stderrMessage] = await runUserCode(editor);
+
+    let initialMessage = '<h3>✅ Your code is free of errors.</h3>';
+    if (errorMessage?.trim() || stderrMessage?.trim()) {
+        initialMessage = `<h3>⚠️ Detected Issues</h3><pre>${errorMessage || stderrMessage || stdoutMessage}</pre>`;
+    }
+	panel.webview.html = `<html><body>${initialMessage}<h3>🚀 Sending your code to Wingman for further analysis...</h3></body></html>`;
+
+    const prompt = await vscode.window.showInputBox({
+        prompt: 'Tell Wingman what is wrong with your code (optional if detected errors)',
+        placeHolder: 'e.g., Should have printed 42 but it printed 0',
+    });
+	if (!prompt) {
+		vscode.window.showInformationMessage("Wingman cancelled the check.");
+        updateStatusBar(WingmanState.Idle);
+        return;
+	}
+
+    try {
+        const payload: SuggestFixesRequest = {
+            code: text,
+            error_message: errorMessage || stderrMessage || stdoutMessage,
+            user_request: prompt || "",
+            language: editor.document.languageId
+        };
+
+        const response = await axios.post<SuggestFixesResponse>(
+            'http://127.0.0.1:8000/suggest-fixes',
+            payload
+        );
+
+        const fixed_code = response.data.fixed_code;
+        const fixes = response.data.fixes ?? [];
+        const differences = response.data.differences ?? [];
+
+        let htmlContent = `${initialMessage}`;
+        if (fixes.length > 0) {
+            htmlContent += '<h3>🧠 Suggested Fixes:</h3><ul>' + fixes.map(fix => `<li>${fix}</li>`).join('') + '</ul>';
+        }
+		if (fixed_code.length > 0) {
+			htmlContent += '<h3> Fixed Code:</h3><pre><code>' + fixed_code + '</code></pre>'
+		}
+        if (differences.length > 0) {
+            htmlContent += '<h3>🧾 Differences:</h3><ul>' + differences.map(diff => `<li>${diff}</li>`).join('') + '</ul>';
+        }
+
+        if (fixed_code) {
+			htmlContent += `
+				<h3>🔧 Apply Fix:</h3>
+				<button onclick="applyFix()" style="
+					background-color: #007acc;
+					color: white;
+					padding: 10px 16px;
+					border: none;
+					border-radius: 6px;
+					cursor: pointer;
+					font-size: 14px;
+					margin-top: 10px;
+					transition: background-color 0.3s ease;
+				" onmouseover="this.style.backgroundColor='#005a9e'"
+				onmouseout="this.style.backgroundColor='#007acc'">
+					💾 Apply wingman fixes
+				</button>`;
+		}
+
+
+        panel.webview.html = `
+            <html>
+            <body>
+                ${htmlContent}
+                <script>
+                    const vscode = acquireVsCodeApi();
+                    function applyFix() {
+                        vscode.postMessage({ command: 'applyFix' });
+                    }
+                </script>
+            </body>
+            </html>
+        `;
+
+        panel.webview.onDidReceiveMessage(async message => {
+            if (message.command === 'applyFix' && fixed_code) {
+                const edit = new vscode.WorkspaceEdit();
+                const fullRange = new vscode.Range(
+                    editor.document.positionAt(0),
+                    editor.document.positionAt(text.length)
+                );
+                edit.replace(editor.document.uri, fullRange, fixed_code);
+                await vscode.workspace.applyEdit(edit);
+                vscode.window.showInformationMessage("✅ Wingman's fix applied!");
+            }
+        }, undefined, undefined);
+
+    } catch (err: any) {
+        panel.webview.html = `<html><body><h3>❌ API call failed: ${err.message}</h3></body></html>`;
+    } finally {
+        updateStatusBar(WingmanState.Idle);
+    }
+});
+
+/////////////////////////////// suggest fixes ////////////////////////////////////////////////
+
 	context.subscriptions.push(statusBar);
 	context.subscriptions.push(askWingman);
 	context.subscriptions.push(generateTestcases);
 	context.subscriptions.push(explainErrors);
+	context.subscriptions.push(suggestFixes);
 }
 
 export function deactivate() {}

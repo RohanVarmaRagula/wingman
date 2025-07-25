@@ -8,11 +8,13 @@ router = APIRouter()
 async def suggest_fixes(req: SuggestFixesRequest):
     code=req.code
     errors=req.error_message
+    user_request=req.user_request
     language=req.language
     
     return suggest_fixes_(
         code=code,
         error_message=errors,
+        user_request=user_request,
         language=language
     )
     

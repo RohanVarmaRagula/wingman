@@ -15,6 +15,7 @@ class ExplainErrorsResponse(BaseModel):
 class SuggestFixesRequest(BaseModel):
     code: str
     error_message: str
+    user_request: str
     language: Optional[str] = "python"
     
 class SuggestFixesResponse(BaseModel):

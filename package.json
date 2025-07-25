@@ -27,6 +27,10 @@
       {
         "command": "wingman.explainErrors",
         "title": "Wingman: Explain Errors"
+      },
+      {
+        "command": "wingman.suggestFixes",
+        "title": "Wingman: Suggest Fixes"
       }
     ]
   },
