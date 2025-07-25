@@ -17,16 +17,16 @@
   "contributes": {
     "commands": [
       {
-        "command": "wingman.helloWorld",
-        "title": "Hello World"
-      },
-      {
         "command": "wingman.askWingman",
-        "title": "Ask Wingman"
+        "title": "Wingman: Code Walkthrough"
       },
       {
         "command": "wingman.generateTestcases",
-        "title": "Generate Testcases"
+        "title": "Wingman: Generate Testcases"
+      },
+      {
+        "command": "wingman.explainErrors",
+        "title": "Wingman: Explain Errors"
       }
     ]
   },

@@ -37,7 +37,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var require_delayed_stream = __commonJS({
   "node_modules/delayed-stream/lib/delayed_stream.js"(exports2, module2) {
     var Stream = require("stream").Stream;
-    var util3 = require("util");
+    var util4 = require("util");
     module2.exports = DelayedStream;
     function DelayedStream() {
       this.source = null;
@@ -48,7 +48,7 @@ var require_delayed_stream = __commonJS({
       this._released = false;
       this._bufferedEvents = [];
     }
-    util3.inherits(DelayedStream, Stream);
+    util4.inherits(DelayedStream, Stream);
     DelayedStream.create = function(source, options) {
       var delayedStream = new this();
       options = options || {};
@@ -127,7 +127,7 @@ var require_delayed_stream = __commonJS({
 // node_modules/combined-stream/lib/combined_stream.js
 var require_combined_stream = __commonJS({
   "node_modules/combined-stream/lib/combined_stream.js"(exports2, module2) {
-    var util3 = require("util");
+    var util4 = require("util");
     var Stream = require("stream").Stream;
     var DelayedStream = require_delayed_stream();
     module2.exports = CombinedStream;
@@ -143,7 +143,7 @@ var require_combined_stream = __commonJS({
       this._insideLoop = false;
       this._pendingNext = false;
     }
-    util3.inherits(CombinedStream, Stream);
+    util4.inherits(CombinedStream, Stream);
     CombinedStream.create = function(options) {
       var combinedStream = new this();
       options = options || {};
@@ -8830,7 +8830,7 @@ var require_mime_types = __commonJS({
   "node_modules/mime-types/index.js"(exports2) {
     "use strict";
     var db = require_mime_db();
-    var extname = require("path").extname;
+    var extname2 = require("path").extname;
     var EXTRACT_TYPE_REGEXP = /^\s*([^;\s]*)(?:;|\s|$)/;
     var TEXT_TYPE_REGEXP = /^text\//i;
     exports2.charset = charset;
@@ -8880,11 +8880,11 @@ var require_mime_types = __commonJS({
       }
       return exts[0];
     }
-    function lookup(path) {
-      if (!path || typeof path !== "string") {
+    function lookup(path2) {
+      if (!path2 || typeof path2 !== "string") {
         return false;
       }
-      var extension2 = extname("x." + path).toLowerCase().substr(1);
+      var extension2 = extname2("x." + path2).toLowerCase().substr(1);
       if (!extension2) {
         return false;
       }
@@ -9988,8 +9988,8 @@ var require_form_data = __commonJS({
   "node_modules/form-data/lib/form_data.js"(exports2, module2) {
     "use strict";
     var CombinedStream = require_combined_stream();
-    var util3 = require("util");
-    var path = require("path");
+    var util4 = require("util");
+    var path2 = require("path");
     var http2 = require("http");
     var https2 = require("https");
     var parseUrl = require("url").parse;
@@ -10013,7 +10013,7 @@ var require_form_data = __commonJS({
         this[option] = options[option];
       }
     }
-    util3.inherits(FormData3, CombinedStream);
+    util4.inherits(FormData3, CombinedStream);
     FormData3.LINE_BREAK = "\r\n";
     FormData3.DEFAULT_CONTENT_TYPE = "application/octet-stream";
     FormData3.prototype.append = function(field, value, options) {
@@ -10116,11 +10116,11 @@ var require_form_data = __commonJS({
     FormData3.prototype._getContentDisposition = function(value, options) {
       var filename;
       if (typeof options.filepath === "string") {
-        filename = path.normalize(options.filepath).replace(/\\/g, "/");
+        filename = path2.normalize(options.filepath).replace(/\\/g, "/");
       } else if (options.filename || value && (value.name || value.path)) {
-        filename = path.basename(options.filename || value && (value.name || value.path));
+        filename = path2.basename(options.filename || value && (value.name || value.path));
       } else if (value && value.readable && hasOwn(value, "httpVersion")) {
-        filename = path.basename(value.client._httpMessage.path || "");
+        filename = path2.basename(value.client._httpMessage.path || "");
       }
       if (filename) {
         return 'filename="' + filename + '"';
@@ -10977,14 +10977,14 @@ var init_supports_color = __esm({
 var require_node = __commonJS({
   "node_modules/debug/src/node.js"(exports2, module2) {
     var tty2 = require("tty");
-    var util3 = require("util");
+    var util4 = require("util");
     exports2.init = init;
     exports2.log = log;
     exports2.formatArgs = formatArgs;
     exports2.save = save;
     exports2.load = load;
     exports2.useColors = useColors;
-    exports2.destroy = util3.deprecate(
+    exports2.destroy = util4.deprecate(
       () => {
       },
       "Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`."
@@ -11115,7 +11115,7 @@ var require_node = __commonJS({
       return (/* @__PURE__ */ new Date()).toISOString() + " ";
     }
     function log(...args) {
-      return process.stderr.write(util3.formatWithOptions(exports2.inspectOpts, ...args) + "\n");
+      return process.stderr.write(util4.formatWithOptions(exports2.inspectOpts, ...args) + "\n");
     }
     function save(namespaces) {
       if (namespaces) {
@@ -11138,11 +11138,11 @@ var require_node = __commonJS({
     var { formatters } = module2.exports;
     formatters.o = function(v) {
       this.inspectOpts.colors = this.useColors;
-      return util3.inspect(v, this.inspectOpts).split("\n").map((str) => str.trim()).join(" ");
+      return util4.inspect(v, this.inspectOpts).split("\n").map((str) => str.trim()).join(" ");
     };
     formatters.O = function(v) {
       this.inspectOpts.colors = this.useColors;
-      return util3.inspect(v, this.inspectOpts);
+      return util4.inspect(v, this.inspectOpts);
     };
   }
 });
@@ -12141,9 +12141,9 @@ function isVisitable(thing) {
 function removeBrackets(key) {
   return utils_default.endsWith(key, "[]") ? key.slice(0, -2) : key;
 }
-function renderKey(path, key, dots) {
-  if (!path) return key;
-  return path.concat(key).map(function each(token, i) {
+function renderKey(path2, key, dots) {
+  if (!path2) return key;
+  return path2.concat(key).map(function each(token, i) {
     token = removeBrackets(token);
     return !dots && i ? "[" + token + "]" : token;
   }).join(dots ? "." : "");
@@ -12191,9 +12191,9 @@ function toFormData(obj, formData, options) {
     }
     return value;
   }
-  function defaultVisitor(value, key, path) {
+  function defaultVisitor(value, key, path2) {
     let arr = value;
-    if (value && !path && typeof value === "object") {
+    if (value && !path2 && typeof value === "object") {
       if (utils_default.endsWith(key, "{}")) {
         key = metaTokens ? key : key.slice(0, -2);
         value = JSON.stringify(value);
@@ -12212,7 +12212,7 @@ function toFormData(obj, formData, options) {
     if (isVisitable(value)) {
       return true;
     }
-    formData.append(renderKey(path, key, dots), convertValue(value));
+    formData.append(renderKey(path2, key, dots), convertValue(value));
     return false;
   }
   const stack = [];
@@ -12221,10 +12221,10 @@ function toFormData(obj, formData, options) {
     convertValue,
     isVisitable
   });
-  function build(value, path) {
+  function build(value, path2) {
     if (utils_default.isUndefined(value)) return;
     if (stack.indexOf(value) !== -1) {
-      throw Error("Circular reference detected in " + path.join("."));
+      throw Error("Circular reference detected in " + path2.join("."));
     }
     stack.push(value);
     utils_default.forEach(value, function each(el, key) {
@@ -12232,11 +12232,11 @@ function toFormData(obj, formData, options) {
         formData,
         el,
         utils_default.isString(key) ? key.trim() : key,
-        path,
+        path2,
         exposedHelpers
       );
       if (result === true) {
-        build(el, path ? path.concat(key) : [key]);
+        build(el, path2 ? path2.concat(key) : [key]);
       }
     });
     stack.pop();
@@ -12448,7 +12448,7 @@ var platform_default = {
 // node_modules/axios/lib/helpers/toURLEncodedForm.js
 function toURLEncodedForm(data, options) {
   return toFormData_default(data, new platform_default.classes.URLSearchParams(), Object.assign({
-    visitor: function(value, key, path, helpers) {
+    visitor: function(value, key, path2, helpers) {
       if (platform_default.isNode && utils_default.isBuffer(value)) {
         this.append(key, value.toString("base64"));
         return false;
@@ -12477,11 +12477,11 @@ function arrayToObject(arr) {
   return obj;
 }
 function formDataToJSON(formData) {
-  function buildPath(path, value, target, index) {
-    let name = path[index++];
+  function buildPath(path2, value, target, index) {
+    let name = path2[index++];
     if (name === "__proto__") return true;
     const isNumericKey = Number.isFinite(+name);
-    const isLast = index >= path.length;
+    const isLast = index >= path2.length;
     name = !name && utils_default.isArray(target) ? target.length : name;
     if (isLast) {
       if (utils_default.hasOwnProp(target, name)) {
@@ -12494,7 +12494,7 @@ function formDataToJSON(formData) {
     if (!target[name] || !utils_default.isObject(target[name])) {
       target[name] = [];
     }
-    const result = buildPath(path, value, target[name], index);
+    const result = buildPath(path2, value, target[name], index);
     if (result && utils_default.isArray(target[name])) {
       target[name] = arrayToObject(target[name]);
     }
@@ -13629,9 +13629,9 @@ var http_default = isHttpAdapterSupported && function httpAdapter(config) {
       auth = urlUsername + ":" + urlPassword;
     }
     auth && headers.delete("authorization");
-    let path;
+    let path2;
     try {
-      path = buildURL(
+      path2 = buildURL(
         parsed.pathname + parsed.search,
         config.params,
         config.paramsSerializer
@@ -13649,7 +13649,7 @@ var http_default = isHttpAdapterSupported && function httpAdapter(config) {
       false
     );
     const options = {
-      path,
+      path: path2,
       method,
       headers: headers.toJSON(),
       agents: { http: config.httpAgent, https: config.httpsAgent },
@@ -13879,10 +13879,10 @@ var isURLSameOrigin_default = platform_default.hasStandardBrowserEnv ? /* @__PUR
 var cookies_default = platform_default.hasStandardBrowserEnv ? (
   // Standard browser envs support document.cookie
   {
-    write(name, value, expires, path, domain, secure) {
+    write(name, value, expires, path2, domain, secure) {
       const cookie = [name + "=" + encodeURIComponent(value)];
       utils_default.isNumber(expires) && cookie.push("expires=" + new Date(expires).toGMTString());
-      utils_default.isString(path) && cookie.push("path=" + path);
+      utils_default.isString(path2) && cookie.push("path=" + path2);
       utils_default.isString(domain) && cookie.push("domain=" + domain);
       secure === true && cookie.push("secure");
       document.cookie = cookie.join("; ");
@@ -14948,7 +14948,7 @@ function createInstance(defaultConfig) {
   const instance = bind(Axios_default.prototype.request, context);
   utils_default.extend(instance, Axios_default.prototype, context, { allOwnKeys: true });
   utils_default.extend(instance, context, null, { allOwnKeys: true });
-  instance.create = function create(instanceConfig) {
+  instance.create = function create2(instanceConfig) {
     return createInstance(mergeConfig(defaultConfig, instanceConfig));
   };
   return instance;
@@ -14996,6 +14996,9 @@ var {
 } = axios_default;
 
 // src/extension.ts
+var path = __toESM(require("path"));
+var import_child_process = require("child_process");
+var util3 = __toESM(require("util"));
 function activate(context) {
   console.log('Congratulations, your extension "wingman" is now active!');
   const statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
@@ -15007,34 +15010,68 @@ function activate(context) {
     WingmanState2["Thinking"] = "Thinking ...";
     WingmanState2["Running"] = "Running ...";
   })(WingmanState || (WingmanState = {}));
-  function updateStaturBar(state) {
+  function updateStatusBar(state) {
     statusBar.text = `$(zap) Wingman's ${state}`;
   }
-  updateStaturBar("Idle" /* Idle */);
+  updateStatusBar("Idle" /* Idle */);
   statusBar.show();
-  const disposable = vscode.commands.registerCommand("wingman.helloWorld", () => {
-    vscode.window.showInformationMessage("Wingman say's hello!");
-  });
+  const execPromise = util3.promisify(import_child_process.exec);
+  async function runUserCode(editor) {
+    if (!editor) {
+      vscode.window.showErrorMessage("No active editor found");
+      updateStatusBar("Idle" /* Idle */);
+      return ["", "", ""];
+    }
+    const text = editor.document.getText();
+    if (!text) {
+      vscode.window.showWarningMessage("No code in current file");
+      updateStatusBar("Idle" /* Idle */);
+      return ["", "", ""];
+    }
+    const filePath = editor.document.fileName;
+    const fileExt = path.extname(filePath);
+    let command = "";
+    switch (fileExt) {
+      case ".py":
+        command = `python "${filePath}"`;
+        break;
+      case ".cpp":
+        const execName = process.platform === "win32" ? "wingman.exe" : "./wingman";
+        command = `g++ "${filePath}" -o wingman && ${execName}`;
+        break;
+      default:
+        vscode.window.showWarningMessage(`Unsupported extension: ${fileExt}`);
+        updateStatusBar("Idle" /* Idle */);
+        return ["", "", ""];
+    }
+    try {
+      const { stdout, stderr } = await execPromise(command, { timeout: 5e3 });
+      return ["", stdout, stderr];
+    } catch (error) {
+      const errorMessage = error.message || JSON.stringify(error);
+      const exitCode = error.code ?? "unknown";
+      return [`Runtime error (exit code ${exitCode})`, error.stdout || "", error.stderr || ""];
+    }
+  }
   const askWingman = vscode.commands.registerCommand("wingman.askWingman", async () => {
-    updateStaturBar("Running ..." /* Running */);
+    updateStatusBar("Running ..." /* Running */);
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
       vscode.window.showErrorMessage("No active editor found");
-      updateStaturBar("Idle" /* Idle */);
+      updateStatusBar("Idle" /* Idle */);
       return;
     }
     const text = editor?.document.getText(editor.selection);
     if (!text) {
       vscode.window.showWarningMessage("No text selected");
-      updateStaturBar("Idle" /* Idle */);
+      updateStatusBar("Idle" /* Idle */);
       return;
     }
-    updateStaturBar("Thinking ..." /* Thinking */);
+    updateStatusBar("Thinking ..." /* Thinking */);
     const output = vscode.window.createOutputChannel("Wingman");
-    output.clear();
     output.appendLine(`Selected Text:
  ${text}`);
-    output.appendLine("Sending your code to Wingman...\n");
+    output.appendLine("\u{1F680} Sending your code to Wingman...\n");
     output.show();
     try {
       const payload = {
@@ -15055,23 +15092,23 @@ ${step}
 `);
       }
     } catch (err) {
-      output.appendLine("API Call failed");
+      output.appendLine("\u274C API call failed: " + err.message);
     }
     output.appendLine("-----------------------------------------------------------------");
-    updateStaturBar("Idle" /* Idle */);
+    updateStatusBar("Idle" /* Idle */);
   });
   const generateTestcases = vscode.commands.registerCommand("wingman.generateTestcases", async () => {
-    updateStaturBar("Running ..." /* Running */);
+    updateStatusBar("Running ..." /* Running */);
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
       vscode.window.showErrorMessage("No active error found!");
-      updateStaturBar("Idle" /* Idle */);
+      updateStatusBar("Idle" /* Idle */);
       return;
     }
     const text = editor.document.getText(editor.selection);
     if (!text) {
       vscode.window.showWarningMessage("No text selected!");
-      updateStaturBar("Idle" /* Idle */);
+      updateStatusBar("Idle" /* Idle */);
       return;
     }
     const output = vscode.window.createOutputChannel("Wingman");
@@ -15081,15 +15118,15 @@ ${step}
         ["1", "2", "3", "4", "5"],
         {
           title: "Select the number of testcases to be generated.",
-          placeHolder: "Choose 1-5 testcases"
+          placeHolder: "Choose number of testcases"
         }
       );
       if (!n) {
         vscode.window.showWarningMessage("Cancelled test case generation.");
-        updateStaturBar("Idle" /* Idle */);
+        updateStatusBar("Idle" /* Idle */);
         return;
       }
-      output.appendLine("Sending your code to wingman!");
+      output.appendLine("\u{1F680} Sending your code to wingman!");
       try {
         const payload = {
           code: text,
@@ -15104,7 +15141,7 @@ ${step}
         output.appendLine("\u{1F9EA} Generated Test Cases:\n");
         for (const [index, testCase] of testcases.entries()) {
           output.appendLine(`\u{1F538} Test Case ${index + 1}`);
-          output.appendLine(`   \u27A4 Input: ${JSON.stringify(testCase.input, null, 2)}`);
+          output.appendLine(`   \u27A4 Input: ${JSON.stringify(testCase.input, null, 4)}`);
           output.appendLine(`   \u27A4 Expected Output: ${testCase.expected_output}`);
           if (testCase.explanation) {
             output.appendLine(`   \u{1F4AC} Explanation: ${testCase.explanation}`);
@@ -15112,16 +15149,79 @@ ${step}
           output.appendLine("\n");
         }
       } catch (err) {
-        output.appendLine("API Call failed");
+        output.appendLine("\u274C API call failed: " + err.message);
       }
       output.appendLine("-----------------------------------------------------------------");
-      updateStaturBar("Idle" /* Idle */);
+      updateStatusBar("Idle" /* Idle */);
     }, 100);
   });
+  const explainErrors = vscode.commands.registerCommand("wingman.explainErrors", async () => {
+    updateStatusBar("Running ..." /* Running */);
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+      vscode.window.showErrorMessage("No active editor found!");
+      updateStatusBar("Idle" /* Idle */);
+      return;
+    }
+    const text = editor.document.getText();
+    if (!text) {
+      vscode.window.showWarningMessage("No text found!");
+      updateStatusBar("Idle" /* Idle */);
+      return;
+    }
+    const userChoice = await vscode.window.showInformationMessage(
+      "Do you want Wingman to run your code to check for errors?",
+      { modal: true },
+      "Yes",
+      "No"
+    );
+    if (userChoice !== "Yes") {
+      vscode.window.showInformationMessage("Wingman cancelled the check.");
+      updateStatusBar("Idle" /* Idle */);
+      return;
+    }
+    const output = vscode.window.createOutputChannel("Wingman");
+    output.show(true);
+    output.appendLine(`\u{1F9EA} Running your code: ...`);
+    const [errorMessage, stdoutMessage, stderrMessage] = await runUserCode(editor);
+    output.appendLine("Error :" + errorMessage);
+    output.appendLine("Stderr :" + stderrMessage);
+    output.appendLine("Stdout : " + stdoutMessage);
+    if (!(errorMessage?.trim() || stderrMessage?.trim())) {
+      vscode.window.showInformationMessage("\u2705 Your code is already perfect.");
+      updateStatusBar("Idle" /* Idle */);
+      return;
+    }
+    try {
+      const payload = {
+        code: text,
+        error_message: errorMessage || stderrMessage || stdoutMessage,
+        language: editor.document.languageId
+      };
+      output.appendLine("\u{1F680} Sending your code and errors to Wingman...");
+      const response = await axios_default.post(
+        "http://127.0.0.1:8000/explain-errors",
+        payload
+      );
+      const explain = response.data.explanation;
+      const possible_fixes = response.data.possible_causes ?? [];
+      output.appendLine(`\u{1F9E0} Explanation:
+${explain}`);
+      output.appendLine("\u{1F6E0}\uFE0F Possible Fixes:");
+      for (const fix of possible_fixes) {
+        output.appendLine(`- ${fix}`);
+      }
+    } catch (err) {
+      output.appendLine("\u274C API call failed: " + err.message);
+    } finally {
+      output.appendLine("---------------------------------------------");
+      updateStatusBar("Idle" /* Idle */);
+    }
+  });
   context.subscriptions.push(statusBar);
-  context.subscriptions.push(disposable);
   context.subscriptions.push(askWingman);
   context.subscriptions.push(generateTestcases);
+  context.subscriptions.push(explainErrors);
 }
 function deactivate() {
 }
