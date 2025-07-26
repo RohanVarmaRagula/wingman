@@ -31,6 +31,18 @@
       {
         "command": "wingman.suggestFixes",
         "title": "Wingman: Suggest Fixes"
+      },
+      {
+        "command": "wingman.setLLMProvider",
+        "title": "Wingman: Choose an LLM Provider"
+      },
+      {
+        "command": "wingman.setLLMModel",
+        "title": "Wingman: Choose an LLM Model"
+      },
+      {
+        "command": "wingman.setAPIKey",
+        "title": "Wingman: Set API Key"
       }
     ]
   },

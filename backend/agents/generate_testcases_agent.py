@@ -1,11 +1,11 @@
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from typing import Optional
-from models.schemas import GenerateTestCasesResponse
+from models.schemas import GenerateTestCasesResponse, LLMRequest
 from llms.llm_providers import get_llm
 
-def generate_testcases(code:str, num_testcases:int, code_explanation: Optional[str] = None, language:Optional[str]="python"):
-    model=get_llm(provider="ollama", model="gemma:7b")
+def generate_testcases(code:str, num_testcases:int, llm_req: LLMRequest, code_explanation: Optional[str] = None, language:Optional[str]="python"):
+    model=get_llm(provider=llm_req.provider, model=llm_req.model, api_key=llm_req.api_key)
     prompt_template = ChatPromptTemplate.from_messages([
         ("system", """
             You are an AI agent that reads a code snippet and, if provided, its explanation.

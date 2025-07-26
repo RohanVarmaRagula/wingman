@@ -1,13 +1,43 @@
 import * as vscode from 'vscode';
 import axios from 'axios';
-import {CodeWalkthroughRequest, CodeWalkthroughResponse, GenerateTestCasesRequest, GenerateTestCasesResponse ,ExplainErrorsRequest, ExplainErrorsResponse,SuggestFixesRequest, SuggestFixesResponse} from './schemas';
+import {LLMRequest, CodeWalkthroughRequest, CodeWalkthroughResponse, GenerateTestCasesRequest, GenerateTestCasesResponse ,ExplainErrorsRequest, ExplainErrorsResponse,SuggestFixesRequest, SuggestFixesResponse} from './schemas';
 import * as path from 'path';
 import { exec } from 'child_process';
 import * as util from 'util';
-
+import { promises } from 'dns';
 
 export function activate(context: vscode.ExtensionContext) {
 	console.log('Congratulations, your extension "wingman" is now active!');
+
+	//////////////////////////////// getLLMRequest /////////////////////////////////////////////
+	async function getLLMRequest(): Promise<LLMRequest> {
+		let provider = await context.secrets.get('provider');
+		if (!provider) {
+			await vscode.commands.executeCommand('wingman.setLLMProvider');
+			provider = await context.secrets.get('provider');
+		}
+		let model = await context.secrets.get('model');
+		if (!model) {
+			await vscode.commands.executeCommand('wingman.setLLMModel');
+			model = await context.secrets.get('model');
+		}
+		let api_key = await context.secrets.get(`${provider}_API_KEY`);
+		if (!api_key) {
+			await vscode.commands.executeCommand('wingman.setAPIKey');
+			api_key = await context.secrets.get(`${provider}_API_KEY`);
+		}
+		if (!provider || !model || !api_key) {
+			throw new Error("Incomplete LLM configuration. Please set provider, model, and API key.");
+		}
+		const req: LLMRequest = {
+			provider,
+			model,
+			api_key
+		};
+		return req;
+	}
+
+	//////////////////////////////// getLLMRequest /////////////////////////////////////////////
 
 	/////////////////////////////////   STATUS BAR   ///////////////////////////////////////////
 	const statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
@@ -94,9 +124,11 @@ export function activate(context: vscode.ExtensionContext) {
 		output.show();
 
 		try {
+			const llm_req = await getLLMRequest();
 			const payload: CodeWalkthroughRequest = {
 				code: text,
-				language: editor.document.languageId
+				language: editor.document.languageId,
+				llm_request: llm_req
 			};
 			const response = await axios.post<CodeWalkthroughResponse>(
 				'http://127.0.0.1:8000/code-walkthrough', 
@@ -148,10 +180,12 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 			output.appendLine('🚀 Sending your code to wingman!');
 			try {
+				const llm_req = await getLLMRequest();
 				const payload: GenerateTestCasesRequest = {
 					code: text,
 					num_testcases: n,
-					language: editor.document.languageId
+					language: editor.document.languageId,
+					llm_request: llm_req
 				};
 
 				const response = await axios.post<GenerateTestCasesResponse>(
@@ -221,10 +255,12 @@ export function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 		try {
+			const llm_req = await getLLMRequest();
 			const payload: ExplainErrorsRequest = {
 				code: text,
 				error_message: errorMessage || stderrMessage || stdoutMessage,
-				language: editor.document.languageId
+				language: editor.document.languageId,
+				llm_request: llm_req
 			};
 
 			output.appendLine('🚀 Sending your code and errors to Wingman...');
@@ -310,11 +346,13 @@ const suggestFixes = vscode.commands.registerCommand('wingman.suggestFixes', asy
 	}
 
     try {
+		const llm_req = await getLLMRequest();
         const payload: SuggestFixesRequest = {
             code: text,
             error_message: errorMessage || stderrMessage || stdoutMessage,
             user_request: prompt || "",
-            language: editor.document.languageId
+            language: editor.document.languageId,
+			llm_request: llm_req
         };
 
         const response = await axios.post<SuggestFixesResponse>(
@@ -331,7 +369,7 @@ const suggestFixes = vscode.commands.registerCommand('wingman.suggestFixes', asy
             htmlContent += '<h3>🧠 Suggested Fixes:</h3><ul>' + fixes.map(fix => `<li>${fix}</li>`).join('') + '</ul>';
         }
 		if (fixed_code.length > 0) {
-			htmlContent += '<h3> Fixed Code:</h3><pre><code>' + fixed_code + '</code></pre>'
+			htmlContent += '<h3> Fixed Code:</h3><pre><code>' + fixed_code + '</code></pre>';
 		}
         if (differences.length > 0) {
             htmlContent += '<h3>🧾 Differences:</h3><ul>' + differences.map(diff => `<li>${diff}</li>`).join('') + '</ul>';
@@ -391,6 +429,72 @@ const suggestFixes = vscode.commands.registerCommand('wingman.suggestFixes', asy
     }
 });
 
+const setLLMProvider = vscode.commands.registerCommand('wingman.setLLMProvider', async() => {
+	const providers = ['GOOGLE'];
+	const provider = await vscode.window.showQuickPick(
+        providers,
+        {
+            title: 'Choose an LLM Provider',
+            placeHolder: 'Choose an LLM Provider'
+        }
+    );
+	if (!provider) {
+		vscode.window.showWarningMessage('No provider selected!');
+		return;
+	}
+	await context.secrets.store('provider', provider);
+});
+const setLLMModel = vscode.commands.registerCommand('wingman.setLLMModel', async() => {
+	let models: string[] = [];
+	let provider = await context.secrets.get('provider');
+	if (!provider){
+		await vscode.commands.executeCommand('wingman.setLLMProvider');
+		provider = await context.secrets.get('provider');
+	}
+	if (provider === 'GOOGLE') {
+		models = [
+			'gemini-2.5-pro', 
+			'gemini-2.5-flash',
+			'gemini-2.5-flash-lite', 
+			'gemini-2.0-flash', 
+			'gemini-2.0-flash-lite', 
+			'gemma-3', 
+			'gemini-1.5-flash', 
+			'gemini-1.5-pro'
+		];
+	}
+	const model = await vscode.window.showQuickPick(
+		models,
+		{
+			title: `Choose a ${provider} model`,
+			placeHolder: `Choose a ${provider} model`
+		}
+	);
+	if (!model) {
+		vscode.window.showWarningMessage('No model selected!');
+		return;
+	}
+	await context.secrets.store('model', model);
+});
+
+const setAPIKey = vscode.commands.registerCommand('wingman.setAPIKey', async() => {
+	let provider = await context.secrets.get('provider');
+	if (!provider) {
+		await vscode.commands.executeCommand('wingman.setLLMProvider');
+		provider = await context.secrets.get('provider');
+	}
+	const api_key = await vscode.window.showInputBox({
+		prompt: `Enter your ${provider}_API_KEY`,
+		ignoreFocusOut: true,
+		password: true
+	});
+	if (!api_key) {
+        vscode.window.showErrorMessage('API Key is required!');
+        return;
+    }
+	await context.secrets.store(`${provider}_API_KEY`, api_key);
+});
+
 /////////////////////////////// suggest fixes ////////////////////////////////////////////////
 
 	context.subscriptions.push(statusBar);
@@ -398,6 +502,9 @@ const suggestFixes = vscode.commands.registerCommand('wingman.suggestFixes', asy
 	context.subscriptions.push(generateTestcases);
 	context.subscriptions.push(explainErrors);
 	context.subscriptions.push(suggestFixes);
+	context.subscriptions.push(setAPIKey);
+	context.subscriptions.push(setLLMModel);
+	context.subscriptions.push(setLLMProvider);
 }
 
 export function deactivate() {}

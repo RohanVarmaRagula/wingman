@@ -1,13 +1,13 @@
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from typing import Optional
-from models.schemas import SuggestFixesResponse
+from models.schemas import SuggestFixesResponse, LLMRequest
 from llms.llm_providers import get_llm
 from typing import List
 import difflib
 
-def suggest_fixes(code:str, error_message:str, user_request:str, language:Optional[str]="python"):
-    model=get_llm(provider="ollama", model="gemma:7b")
+def suggest_fixes(code:str, error_message:str, user_request:str, llm_req: LLMRequest, language:Optional[str]="python"):
+    model=get_llm(provider=llm_req.provider, model=llm_req.model, api_key=llm_req.api_key)
     prompt_template = ChatPromptTemplate.from_messages([
         ("system", """
             You are an AI agent that reads a code snippet and the error message it generated. If it is free of errors, you are given user's request.

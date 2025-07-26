@@ -5,14 +5,16 @@ import getpass
 
 class UnsupportedLLMProviderError(Exception):
     def __init__(self, provider: str):
-        super().__init__(f"LLM Provided {provider} not supported.")
+        super().__init__(f"LLM Provider {provider} not supported.")
 
-def get_llm(provider: str, model: str):
+def get_llm(provider: str, model: str, api_key: str = ""):
     provider = provider.lower()
     
     if provider == "google":
-        os.environ["GOOGLE_API_KEY"] = getpass.getpass("Enter your gemini API key: ")
-
+        if not api_key:
+            raise ValueError("API key required for Google provider.")
+        
+        os.environ["GOOGLE_API_KEY"] = api_key
         return ChatGoogleGenerativeAI(
             model=model,
             temperature=0.7

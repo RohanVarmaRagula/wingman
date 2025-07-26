@@ -1,11 +1,11 @@
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from typing import Optional
-from models.schemas import ExplainErrorsResponse
+from models.schemas import ExplainErrorsResponse, LLMRequest
 from llms.llm_providers import get_llm
 
-def explain_errors(code:str, error_message:str, language:Optional[str]="python"):
-    model=get_llm(provider="ollama", model="gemma:7b")
+def explain_errors(code:str, error_message:str, llm_req: LLMRequest, language:Optional[str]="python"):
+    model=get_llm(provider=llm_req.provider, model=llm_req.model, api_key=llm_req.api_key)
     prompt_template = ChatPromptTemplate.from_messages([
         ("system", """
             You are an AI agent that reads a code snippet and the error message it generated.

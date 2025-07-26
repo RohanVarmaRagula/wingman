@@ -1,11 +1,11 @@
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from typing import Optional
-from models.schemas import CodeWalkthroughResponse
+from models.schemas import CodeWalkthroughResponse, LLMRequest
 from llms.llm_providers import get_llm
 
-def code_walkthrough(code:str, focus_on:Optional[str]=None , language:Optional[str]="python"):
-    model=get_llm(provider="ollama", model="gemma:7b")
+def code_walkthrough(code:str, llm_req:LLMRequest, focus_on:Optional[str]=None , language:Optional[str]="python"):
+    model=get_llm(provider=llm_req.provider, model=llm_req.model, api_key=llm_req.api_key)
     prompt_template = ChatPromptTemplate.from_messages([
         ("system", """
             You are an AI agent that reads a code snippet and explains its functionality in a structured walkthrough format.

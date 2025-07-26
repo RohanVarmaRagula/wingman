@@ -9,8 +9,10 @@ async def code_walkthrough(req: CodeWalkthroughRequest):
     code = req.code
     focus_on = req.focus_on
     language = req.language
+    llm_req = req.llm_request
     return code_walkthrough_(
         code=code,
+        llm_req=llm_req,
         focus_on=focus_on,
         language=language
     )

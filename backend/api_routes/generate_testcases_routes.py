@@ -10,10 +10,11 @@ async def generate_testcases(req: GenerateTestCasesRequest):
     code_explanation=req.code_explanation
     num_testcases=req.num_testcases
     language=req.language
-    
+    llm_req = req.llm_request
     return generate_testcases_(
         code=code,
         num_testcases=num_testcases,
+        llm_req=llm_req,
         code_explanation=code_explanation,
         language=language
     )

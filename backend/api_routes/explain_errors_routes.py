@@ -9,10 +9,11 @@ async def explain_errors(req: ExplainErrorsRequest):
     code=req.code
     errors=req.error_message
     language=req.language
-    
+    llm_req = req.llm_request
     return explain_errors_(
         code=code,
         error_message=errors,
+        llm_req=llm_req,
         language=language
     )
 

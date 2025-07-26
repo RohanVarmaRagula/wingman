@@ -1,13 +1,16 @@
-// 0. Greet
-export interface Greet{
-    message:string
+// 0. LLMRequest
+export interface LLMRequest{
+    provider: string,
+    model: string,
+    api_key: string
 }
 
 //1. Explain Errors
 export interface ExplainErrorsRequest{
     code: string,
     error_message: string,
-    language?: string;
+    language?: string,
+    llm_request: LLMRequest
 }
 
 export interface ExplainErrorsResponse{
@@ -20,7 +23,8 @@ export interface SuggestFixesRequest{
     code: string,
     error_message: string,
     user_request: string
-    language?: string
+    language?: string,
+    llm_request: LLMRequest
 }
 
 export interface SuggestFixesResponse{
@@ -34,7 +38,8 @@ export interface GenerateTestCasesRequest{
     code: string,
     code_explanation?: string,
     num_testcases: string,
-    language?: string
+    language?: string,
+    llm_request: LLMRequest
 }
 
 export interface TestCase{
@@ -51,7 +56,8 @@ export interface GenerateTestCasesResponse{
 export interface CodeWalkthroughRequest{
     code: string,
     focus_on?: string,
-    language?: string
+    language?: string,
+    llm_request: LLMRequest
 }
 
 export interface CodeSegmentExplanation{
