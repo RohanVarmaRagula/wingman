@@ -15106,11 +15106,8 @@ function activate(context) {
         language: editor.document.languageId,
         llm_request: llm_req
       };
-      output.appendLine(payload.llm_request.model);
-      output.appendLine(payload.llm_request.provider);
-      output.appendLine(payload.llm_request.api_key);
       const response = await axios_default.post(
-        "http://127.0.0.1:8000/code-walkthrough",
+        "https://wingman-chi.vercel.app/code-walkthrough",
         payload
       );
       const walkthrough = response.data.walkthrough;
@@ -15167,7 +15164,7 @@ ${step}
           llm_request: llm_req
         };
         const response = await axios_default.post(
-          "http://127.0.0.1:8000/generate-testcases",
+          "https://wingman-chi.vercel.app/generate-testcases",
           payload
         );
         const testcases = response.data.testcases;
@@ -15232,7 +15229,7 @@ ${step}
       };
       output.appendLine("\u{1F680} Sending your code and errors to Wingman...");
       const response = await axios_default.post(
-        "http://127.0.0.1:8000/explain-errors",
+        "https://wingman-chi.vercel.app/explain-errors",
         payload
       );
       const explain = response.data.explanation;
@@ -15307,7 +15304,7 @@ ${explain}`);
         llm_request: llm_req
       };
       const response = await axios_default.post(
-        "http://127.0.0.1:8000/suggest-fixes",
+        "https://wingman-chi.vercel.app/suggest-fixes",
         payload
       );
       const fixed_code = response.data.fixed_code;

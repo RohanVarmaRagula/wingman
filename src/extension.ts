@@ -129,11 +129,8 @@ export function activate(context: vscode.ExtensionContext) {
 				language: editor.document.languageId,
 				llm_request: llm_req
 			};
-			output.appendLine(payload.llm_request.model);
-			output.appendLine(payload.llm_request.provider);
-			output.appendLine(payload.llm_request.api_key);
 			const response = await axios.post<CodeWalkthroughResponse>(
-				'http://127.0.0.1:8000/code-walkthrough', 
+				'https://wingman-chi.vercel.app/code-walkthrough', 
 				payload
 			);
 			const walkthrough = response.data.walkthrough;
@@ -191,7 +188,7 @@ export function activate(context: vscode.ExtensionContext) {
 				};
 
 				const response = await axios.post<GenerateTestCasesResponse>(
-					'http://127.0.0.1:8000/generate-testcases',
+					'https://wingman-chi.vercel.app/generate-testcases',
 					payload
 				);
 
@@ -268,7 +265,7 @@ export function activate(context: vscode.ExtensionContext) {
 			output.appendLine('🚀 Sending your code and errors to Wingman...');
 
 			const response = await axios.post<ExplainErrorsResponse>(
-				'http://127.0.0.1:8000/explain-errors',
+				'https://wingman-chi.vercel.app/explain-errors',
 				payload
 			);
 
@@ -358,7 +355,7 @@ const suggestFixes = vscode.commands.registerCommand('wingman.suggestFixes', asy
         };
 
         const response = await axios.post<SuggestFixesResponse>(
-            'http://127.0.0.1:8000/suggest-fixes',
+            'https://wingman-chi.vercel.app/suggest-fixes',
             payload
         );
 
