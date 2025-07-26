@@ -30,7 +30,8 @@ def explain_errors(code:str, error_message:str, llm_req: LLMRequest, language:Op
             </error_message>
 
             Only return a valid JSON response in the format shown above.
-        """)
+        """),
+        ("human", "Explain errors in a structured format of the provided code.")
     ])
 
     output_parser = JsonOutputParser(pydantic_object=ExplainErrorsResponse)

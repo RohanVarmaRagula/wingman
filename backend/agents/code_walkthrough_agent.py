@@ -33,7 +33,8 @@ def code_walkthrough(code:str, llm_req:LLMRequest, focus_on:Optional[str]=None ,
             - If a segment doesn't require explanation, you can skip it.
             - Ensure the JSON is valid and adheres to the format above.
 
-        """)
+        """),
+        ("human", "Give a structured walkthrough of the provided code.")
     ])
 
     output_parser = JsonOutputParser(pydantic_object=CodeWalkthroughResponse)

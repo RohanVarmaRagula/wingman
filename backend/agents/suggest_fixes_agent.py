@@ -37,7 +37,8 @@ def suggest_fixes(code:str, error_message:str, user_request:str, llm_req: LLMReq
             </user_request>
 
             Only return a valid JSON response in the format shown above.
-        """)
+        """),
+        ("human", "Suggest fixes in a structured format of the provided code.")
     ])
 
     

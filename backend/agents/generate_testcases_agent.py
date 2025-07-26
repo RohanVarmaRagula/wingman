@@ -36,7 +36,8 @@ def generate_testcases(code:str, num_testcases:int, llm_req: LLMRequest, code_ex
             - Return only a valid JSON object.
             - Do not add any prose or commentary outside the JSON.
             - Ensure all dictionary values and expected_output are strings.
-        """)
+        """),
+        ("human", "Generate testcases in a structured format of the provided code.")
     ])
 
     output_parser = JsonOutputParser(pydantic_object=GenerateTestCasesResponse)
