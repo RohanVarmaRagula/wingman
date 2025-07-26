@@ -15001,6 +15001,32 @@ var import_child_process = require("child_process");
 var util3 = __toESM(require("util"));
 function activate(context) {
   console.log('Congratulations, your extension "wingman" is now active!');
+  async function getLLMRequest() {
+    let provider = await context.secrets.get("provider");
+    if (!provider) {
+      await vscode.commands.executeCommand("wingman.setLLMProvider");
+      provider = await context.secrets.get("provider");
+    }
+    let model = await context.secrets.get("model");
+    if (!model) {
+      await vscode.commands.executeCommand("wingman.setLLMModel");
+      model = await context.secrets.get("model");
+    }
+    let api_key = await context.secrets.get(`${provider}_API_KEY`);
+    if (!api_key) {
+      await vscode.commands.executeCommand("wingman.setAPIKey");
+      api_key = await context.secrets.get(`${provider}_API_KEY`);
+    }
+    if (!provider || !model || !api_key) {
+      throw new Error("Incomplete LLM configuration. Please set provider, model, and API key.");
+    }
+    const req = {
+      provider,
+      model,
+      api_key
+    };
+    return req;
+  }
   const statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
   statusBar.command = "wingman.helloWorld";
   statusBar.tooltip = "Click to say hello to wingman!";
@@ -15074,12 +15100,14 @@ function activate(context) {
     output.appendLine("\u{1F680} Sending your code to Wingman...\n");
     output.show();
     try {
+      const llm_req = await getLLMRequest();
       const payload = {
         code: text,
-        language: editor.document.languageId
+        language: editor.document.languageId,
+        llm_request: llm_req
       };
       const response = await axios_default.post(
-        "http://127.0.0.1:8000/code-walkthrough",
+        "https://wingman-a7p3.onrender.com/code-walkthrough",
         payload
       );
       const walkthrough = response.data.walkthrough;
@@ -15128,13 +15156,15 @@ ${step}
       }
       output.appendLine("\u{1F680} Sending your code to wingman!");
       try {
+        const llm_req = await getLLMRequest();
         const payload = {
           code: text,
           num_testcases: n,
-          language: editor.document.languageId
+          language: editor.document.languageId,
+          llm_request: llm_req
         };
         const response = await axios_default.post(
-          "http://127.0.0.1:8000/generate-testcases",
+          "https://wingman-a7p3.onrender.com/generate-testcases",
           payload
         );
         const testcases = response.data.testcases;
@@ -15190,14 +15220,16 @@ ${step}
       return;
     }
     try {
+      const llm_req = await getLLMRequest();
       const payload = {
         code: text,
         error_message: errorMessage || stderrMessage || stdoutMessage,
-        language: editor.document.languageId
+        language: editor.document.languageId,
+        llm_request: llm_req
       };
       output.appendLine("\u{1F680} Sending your code and errors to Wingman...");
       const response = await axios_default.post(
-        "http://127.0.0.1:8000/explain-errors",
+        "https://wingman-a7p3.onrender.com/explain-errors",
         payload
       );
       const explain = response.data.explanation;
@@ -15263,14 +15295,16 @@ ${explain}`);
       return;
     }
     try {
+      const llm_req = await getLLMRequest();
       const payload = {
         code: text,
         error_message: errorMessage || stderrMessage || stdoutMessage,
         user_request: prompt || "",
-        language: editor.document.languageId
+        language: editor.document.languageId,
+        llm_request: llm_req
       };
       const response = await axios_default.post(
-        "http://127.0.0.1:8000/suggest-fixes",
+        "https://wingman-a7p3.onrender.com/suggest-fixes",
         payload
       );
       const fixed_code = response.data.fixed_code;
@@ -15335,11 +15369,78 @@ ${explain}`);
       updateStatusBar("Idle" /* Idle */);
     }
   });
+  const setLLMProvider = vscode.commands.registerCommand("wingman.setLLMProvider", async () => {
+    const providers = ["GOOGLE"];
+    const provider = await vscode.window.showQuickPick(
+      providers,
+      {
+        title: "Choose an LLM Provider",
+        placeHolder: "Choose an LLM Provider"
+      }
+    );
+    if (!provider) {
+      vscode.window.showWarningMessage("No provider selected!");
+      return;
+    }
+    await context.secrets.store("provider", provider);
+  });
+  const setLLMModel = vscode.commands.registerCommand("wingman.setLLMModel", async () => {
+    let models = [];
+    let provider = await context.secrets.get("provider");
+    if (!provider) {
+      await vscode.commands.executeCommand("wingman.setLLMProvider");
+      provider = await context.secrets.get("provider");
+    }
+    if (provider === "GOOGLE") {
+      models = [
+        "gemini-2.5-pro",
+        "gemini-2.5-flash",
+        "gemini-2.5-flash-lite",
+        "gemini-2.0-flash",
+        "gemini-2.0-flash-lite",
+        "gemma-3",
+        "gemini-1.5-flash",
+        "gemini-1.5-pro"
+      ];
+    }
+    const model = await vscode.window.showQuickPick(
+      models,
+      {
+        title: `Choose a ${provider} model`,
+        placeHolder: `Choose a ${provider} model`
+      }
+    );
+    if (!model) {
+      vscode.window.showWarningMessage("No model selected!");
+      return;
+    }
+    await context.secrets.store("model", model);
+  });
+  const setAPIKey = vscode.commands.registerCommand("wingman.setAPIKey", async () => {
+    let provider = await context.secrets.get("provider");
+    if (!provider) {
+      await vscode.commands.executeCommand("wingman.setLLMProvider");
+      provider = await context.secrets.get("provider");
+    }
+    const api_key = await vscode.window.showInputBox({
+      prompt: `Enter your ${provider}_API_KEY`,
+      ignoreFocusOut: true,
+      password: true
+    });
+    if (!api_key) {
+      vscode.window.showErrorMessage("API Key is required!");
+      return;
+    }
+    await context.secrets.store(`${provider}_API_KEY`, api_key);
+  });
   context.subscriptions.push(statusBar);
   context.subscriptions.push(askWingman);
   context.subscriptions.push(generateTestcases);
   context.subscriptions.push(explainErrors);
   context.subscriptions.push(suggestFixes);
+  context.subscriptions.push(setAPIKey);
+  context.subscriptions.push(setLLMModel);
+  context.subscriptions.push(setLLMProvider);
 }
 function deactivate() {
 }

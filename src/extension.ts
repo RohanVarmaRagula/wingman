@@ -4,7 +4,6 @@ import {LLMRequest, CodeWalkthroughRequest, CodeWalkthroughResponse, GenerateTes
 import * as path from 'path';
 import { exec } from 'child_process';
 import * as util from 'util';
-import { promises } from 'dns';
 
 export function activate(context: vscode.ExtensionContext) {
 	console.log('Congratulations, your extension "wingman" is now active!');
@@ -131,7 +130,7 @@ export function activate(context: vscode.ExtensionContext) {
 				llm_request: llm_req
 			};
 			const response = await axios.post<CodeWalkthroughResponse>(
-				'http://127.0.0.1:8000/code-walkthrough', 
+				'https://wingman-a7p3.onrender.com/code-walkthrough', 
 				payload
 			);
 			const walkthrough = response.data.walkthrough;
@@ -189,7 +188,7 @@ export function activate(context: vscode.ExtensionContext) {
 				};
 
 				const response = await axios.post<GenerateTestCasesResponse>(
-					'http://127.0.0.1:8000/generate-testcases',
+					'https://wingman-a7p3.onrender.com/generate-testcases',
 					payload
 				);
 
@@ -266,7 +265,7 @@ export function activate(context: vscode.ExtensionContext) {
 			output.appendLine('🚀 Sending your code and errors to Wingman...');
 
 			const response = await axios.post<ExplainErrorsResponse>(
-				'http://127.0.0.1:8000/explain-errors',
+				'https://wingman-a7p3.onrender.com/explain-errors',
 				payload
 			);
 
@@ -356,7 +355,7 @@ const suggestFixes = vscode.commands.registerCommand('wingman.suggestFixes', asy
         };
 
         const response = await axios.post<SuggestFixesResponse>(
-            'http://127.0.0.1:8000/suggest-fixes',
+            'https://wingman-a7p3.onrender.com/suggest-fixes',
             payload
         );
 
