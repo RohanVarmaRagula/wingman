@@ -43,6 +43,10 @@
       {
         "command": "wingman.setAPIKey",
         "title": "Wingman: Set API Key"
+      },
+      {
+        "command": "wingman.resetSecrets",
+        "title": "Wingman: Reset secrets"
       }
     ]
   },

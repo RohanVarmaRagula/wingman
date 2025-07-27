@@ -1,71 +1,60 @@
-# wingman README
+# Wingman
 
-This is the README for your extension "wingman". After writing up a brief description, we recommend including the following sections.
+Meet **Wingman** — the AI that assists, not insists. Wingman is your sidekick that debugs, explains, and tests… only when summoned.  
+Forget copy-pasting into ChatGPT or losing focus jumping between tabs. Wingman lives in your editor, ready to break down errors, suggest smart fixes, or whip up test cases — without taking the wheel.  
 
-## Features
-
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
-
-## Requirements
-
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
-
-## Extension Settings
-
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+Because real devs don’t want AI writing their code — they want AI helping them write better code.
 
 ---
 
-## Following extension guidelines
+## ✨ Features
 
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
+### 1. Code Walkthrough  
+Understand what a piece of code is doing, step by step. Select the code you want explained — Wingman reads your selection and breaks it down in plain language, helping you grasp logic, flow, and potential pitfalls.  
+<video controls src="assets/codewalkthrough.mp4" title="Code Walkthrough"></video>
 
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
+### 2. Generate Testcases  
+Wingman generates sample test cases for your functions or selected code — right in your editor.  
+Support for edge cases and property-based testing is coming soon.  
+<video controls src="assets/generatetestcases.mp4" title="Generate Testcases"></video>
 
-## Working with Markdown
+### 3. Explain Errors  
+Wingman reads your terminal output, stack traces, or compile-time errors and explains what went wrong — in English.  
+<video controls src="assets/exaplainerrors.mp4" title="Explain Errors"></video>
 
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
+### 4. Suggest Fixes  
+Wingman analyzes your code and its errors to suggest contextual, intelligent fixes — and teaches you *why* it works.  
+<video controls src="assets/suggestfixes.mp4" title="Suggest Fixes"></video>
 
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
+---
 
-## For more information
+## ⚙️ Setup & Configuration
 
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
+Wingman supports **multiple LLM providers**. You can choose the one that works best for you:
 
-**Enjoy!**
+### 1. Select Your LLM Provider  
+For now we only have **Google**. Will bring others and **Ollama** in future versions.
+
+### 2. Choose the Model  
+Pick your preferred model like `gemini-1.5-pro`, `gemini-1.5-flash`, etc. Wingman lets you switch models anytime based on your needs and budget.
+
+### 3. Set Your API Key  
+On first run (or when using a new provider), Wingman will prompt you to enter your API key.  
+These keys are stored securely using VS Code’s Secrets API.
+
+You can set/change them from the command palette:  
+**`Wingman: Set API Key`**
+
+### 4. Reset All Secrets  
+Want a fresh start? Use the command:  
+**`Wingman: Reset Secrets`**  
+This will clear all stored keys and provider/model settings.
+
+---
+
+## 🔧 Requirements
+
+None yet — Wingman runs out of the box!  
+
+
+**Enjoy.** 🛩️

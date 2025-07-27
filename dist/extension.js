@@ -15002,20 +15002,20 @@ var util3 = __toESM(require("util"));
 function activate(context) {
   console.log('Congratulations, your extension "wingman" is now active!');
   async function getLLMRequest() {
-    let provider = await context.secrets.get("provider");
+    let provider = await waitForSecret("provider");
     if (!provider) {
       await vscode.commands.executeCommand("wingman.setLLMProvider");
-      provider = await context.secrets.get("provider");
+      provider = await waitForSecret("provider");
     }
-    let model = await context.secrets.get("model");
+    let model = await waitForSecret("model");
     if (!model) {
       await vscode.commands.executeCommand("wingman.setLLMModel");
-      model = await context.secrets.get("model");
+      model = await waitForSecret("model");
     }
-    let api_key = await context.secrets.get(`${provider}_API_KEY`);
+    let api_key = await waitForSecret(`${provider}_API_KEY`);
     if (!api_key) {
       await vscode.commands.executeCommand("wingman.setAPIKey");
-      api_key = await context.secrets.get(`${provider}_API_KEY`);
+      api_key = await waitForSecret(`${provider}_API_KEY`);
     }
     if (!provider || !model || !api_key) {
       throw new Error("Incomplete LLM configuration. Please set provider, model, and API key.");
@@ -15087,18 +15087,13 @@ function activate(context) {
       updateStatusBar("Idle" /* Idle */);
       return;
     }
-    const text = editor?.document.getText(editor.selection);
+    const text = editor.document.getText(editor.selection);
     if (!text) {
       vscode.window.showWarningMessage("No text selected");
       updateStatusBar("Idle" /* Idle */);
       return;
     }
     updateStatusBar("Thinking ..." /* Thinking */);
-    const output = vscode.window.createOutputChannel("Wingman");
-    output.appendLine(`Selected Text:
- ${text}`);
-    output.appendLine("\u{1F680} Sending your code to Wingman...\n");
-    output.show();
     try {
       const llm_req = await getLLMRequest();
       const payload = {
@@ -15111,25 +15106,77 @@ function activate(context) {
         payload
       );
       const walkthrough = response.data.walkthrough;
+      const panel = vscode.window.createWebviewPanel(
+        "wingmanWalkthrough",
+        "\u{1F9E0} Wingman Walkthrough",
+        vscode.ViewColumn.Beside,
+        { enableScripts: true }
+      );
+      let htmlContent = `
+				<!DOCTYPE html>
+				<html lang="en">
+				<head>
+					<meta charset="UTF-8">
+					<meta name="viewport" content="width=device-width, initial-scale=1.0">
+					<style>
+						body {
+							font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+							padding: 1rem 2rem;
+							background-color: #1e1e1e;
+							color: #d4d4d4;
+						}
+						h2 {
+							color: #61dafb;
+						}
+						.code-cell {
+							background-color: #2d2d2d;
+							color: #dcdcdc;
+							padding: 1rem;
+							border-radius: 10px;
+							font-family: Consolas, 'Courier New', monospace;
+							font-size: 13px;
+							white-space: pre-wrap;
+							overflow-x: auto;
+							margin-bottom: 1rem;
+							box-shadow: 0 0 10px #00000066;
+						}
+						hr {
+							border: none;
+							border-top: 1px solid #555;
+							margin: 2rem 0;
+						}
+					</style>
+				</head>
+				<body>
+					<h2>\u{1F9E0} Wingman Walkthrough</h2>
+					<p><strong>Language:</strong> ${editor.document.languageId}</p>
+					<hr>
+			`;
       for (const { segment, step } of walkthrough) {
-        output.appendLine(`\u{1F539}Code Segement:
-${segment}
-`);
-        output.appendLine(`\u{1F9E0}Explanation:
-${step}
-`);
+        htmlContent += `
+					<div class="code-cell"><strong>\u{1F539}Code Segment:</strong>
+${segment.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+					<div class="code-cell"><strong>\u{1F9E0} Explanation:</strong>
+${step.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+				`;
       }
+      htmlContent += `
+				<hr>
+				<p>\u2728 End of Walkthrough</p>
+				</body>
+				</html>
+			`;
+      panel.webview.html = htmlContent;
     } catch (err) {
-      output.appendLine("\u274C API call failed: " + err.message);
+      vscode.window.showErrorMessage("\u274C Wingman API failed: " + err.message);
     }
-    output.appendLine("-----------------------------------------------------------------");
     updateStatusBar("Idle" /* Idle */);
   });
   const generateTestcases = vscode.commands.registerCommand("wingman.generateTestcases", async () => {
     updateStatusBar("Running ..." /* Running */);
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
-      vscode.window.showErrorMessage("No active error found!");
+      vscode.window.showErrorMessage("No active editor found!");
       updateStatusBar("Idle" /* Idle */);
       return;
     }
@@ -15139,8 +15186,6 @@ ${step}
       updateStatusBar("Idle" /* Idle */);
       return;
     }
-    const output = vscode.window.createOutputChannel("Wingman");
-    output.show();
     setTimeout(async () => {
       const n = await vscode.window.showQuickPick(
         ["1", "2", "3", "4", "5"],
@@ -15154,7 +15199,6 @@ ${step}
         updateStatusBar("Idle" /* Idle */);
         return;
       }
-      output.appendLine("\u{1F680} Sending your code to wingman!");
       try {
         const llm_req = await getLLMRequest();
         const payload = {
@@ -15168,20 +15212,70 @@ ${step}
           payload
         );
         const testcases = response.data.testcases;
-        output.appendLine("\u{1F9EA} Generated Test Cases:\n");
-        for (const [index, testCase] of testcases.entries()) {
-          output.appendLine(`\u{1F538} Test Case ${index + 1}`);
-          output.appendLine(`   \u27A4 Input: ${JSON.stringify(testCase.input, null, 4)}`);
-          output.appendLine(`   \u27A4 Expected Output: ${testCase.expected_output}`);
-          if (testCase.explanation) {
-            output.appendLine(`   \u{1F4AC} Explanation: ${testCase.explanation}`);
+        const panel = vscode.window.createWebviewPanel(
+          "wingmanTestcases",
+          "Wingman: Generated Testcases",
+          vscode.ViewColumn.Two,
+          {
+            enableScripts: true,
+            retainContextWhenHidden: true
           }
-          output.appendLine("\n");
-        }
+        );
+        const html = `
+					<!DOCTYPE html>
+					<html lang="en">
+					<head>
+						<meta charset="UTF-8">
+						<style>
+							body {
+								font-family: Consolas, monospace;
+								padding: 20px;
+								background-color: #1e1e1e;
+								color: #d4d4d4;
+							}
+							code, pre {
+								background-color: #252526;
+								padding: 1em;
+								border-radius: 8px;
+								display: block;
+								white-space: pre-wrap;
+								word-break: break-word;
+							}
+							.testcase {
+								margin-bottom: 24px;
+							}
+							h2 {
+								color: #569cd6;
+							}
+							.expl {
+								color: #c586c0;
+								margin-top: 0.5em;
+							}
+						</style>
+					</head>
+					<body>
+						<h2>\u{1F9EA} Generated Test Cases</h2>
+						${testcases.map((testCase, idx) => `
+							<div class="testcase">
+								<h3>\u{1F538} Test Case ${idx + 1}</h3>
+								<pre><code><strong>Input:</strong> ${JSON.stringify(testCase.input, null, 4)}</code></pre>
+								<pre><code><strong>Expected Output:</strong> ${testCase.expected_output}</code></pre>
+								${testCase.explanation ? `<div class="expl">\u{1F4AC} ${testCase.explanation}</div>` : ""}
+							</div>
+						`).join("")}
+					</body>
+					</html>
+				`;
+        panel.webview.html = html;
       } catch (err) {
-        output.appendLine("\u274C API call failed: " + err.message);
+        const errorPanel = vscode.window.createWebviewPanel(
+          "wingmanTestcaseError",
+          "Wingman: Error",
+          vscode.ViewColumn.Two,
+          {}
+        );
+        errorPanel.webview.html = `<h3 style="color: red;">\u274C API call failed:</h3><pre>${err.message}</pre>`;
       }
-      output.appendLine("-----------------------------------------------------------------");
       updateStatusBar("Idle" /* Idle */);
     }, 100);
   });
@@ -15210,9 +15304,6 @@ ${step}
       updateStatusBar("Idle" /* Idle */);
       return;
     }
-    const output = vscode.window.createOutputChannel("Wingman");
-    output.show(true);
-    output.appendLine(`\u{1F9EA} Running your code: ...`);
     const [errorMessage, stdoutMessage, stderrMessage] = await runUserCode(editor);
     if (!(errorMessage?.trim() || stderrMessage?.trim())) {
       vscode.window.showInformationMessage("\u2705 Your code is already perfect.");
@@ -15227,23 +15318,62 @@ ${step}
         language: editor.document.languageId,
         llm_request: llm_req
       };
-      output.appendLine("\u{1F680} Sending your code and errors to Wingman...");
       const response = await axios_default.post(
         "https://wingman-chi.vercel.app/explain-errors",
         payload
       );
-      const explain = response.data.explanation;
-      const possible_fixes = response.data.possible_causes ?? [];
-      output.appendLine(`\u{1F9E0} Explanation:
-${explain}`);
-      output.appendLine("\u{1F6E0}\uFE0F Possible Fixes:");
-      for (const fix of possible_fixes) {
-        output.appendLine(`- ${fix}`);
-      }
+      const explanation = response.data.explanation;
+      const possibleFixes = response.data.possible_causes ?? [];
+      const panel = vscode.window.createWebviewPanel(
+        "wingmanExplainErrors",
+        "Wingman \u2013 Error Explanation",
+        vscode.ViewColumn.Beside,
+        { enableScripts: true }
+      );
+      const fixesHTML = possibleFixes.length > 0 ? `<ul>${possibleFixes.map((fix) => `<li>${fix}</li>`).join("")}</ul>` : "<p>No possible fixes found.</p>";
+      panel.webview.html = `
+				<!DOCTYPE html>
+				<html lang="en">
+				<head>
+					<meta charset="UTF-8">
+					<meta name="viewport" content="width=device-width, initial-scale=1.0">
+					<title>Wingman \u2013 Explanation</title>
+					<style>
+						body {
+							font-family: "Segoe UI", sans-serif;
+							padding: 20px;
+							background-color: #1e1e1e;
+							color: #d4d4d4;
+						}
+						h2, h3 {
+							color: #4FC3F7;
+						}
+						code {
+							background-color: #2d2d2d;
+							padding: 4px 6px;
+							border-radius: 4px;
+						}
+						ul {
+							padding-left: 20px;
+						}
+						li {
+							margin-bottom: 8px;
+						}
+					</style>
+				</head>
+				<body>
+					<h2>\u{1F9E0} Explanation</h2>
+					<p>${explanation}</p>
+					<h3>\u{1F6E0}\uFE0F Possible Fixes</h3>
+					${fixesHTML}
+					<hr/>
+					<small>Wingman | AI-powered debugging assistant</small>
+				</body>
+				</html>
+			`;
     } catch (err) {
-      output.appendLine("\u274C API call failed: " + err.message);
+      vscode.window.showErrorMessage("Wingman failed to explain the error: " + err.message);
     } finally {
-      output.appendLine("---------------------------------------------");
       updateStatusBar("Idle" /* Idle */);
     }
   });
@@ -15315,13 +15445,35 @@ ${explain}`);
         htmlContent += "<h3>\u{1F9E0} Suggested Fixes:</h3><ul>" + fixes.map((fix) => `<li>${fix}</li>`).join("") + "</ul>";
       }
       if (fixed_code.length > 0) {
-        htmlContent += "<h3> Fixed Code:</h3><pre><code>" + fixed_code + "</code></pre>";
-      }
-      if (differences.length > 0) {
-        htmlContent += "<h3>\u{1F9FE} Differences:</h3><ul>" + differences.map((diff) => `<li>${diff}</li>`).join("") + "</ul>";
-      }
-      if (fixed_code) {
         htmlContent += `
+				<h3>\u{1F6E0}\uFE0F Fixed Code:</h3>
+				<div style="
+					background-color: #1e1e1e;
+					color: #d4d4d4;
+					padding: 1em;
+					border-radius: 8px;
+					font-family: Consolas, 'Courier New', monospace;
+					font-size: 13px;
+					white-space: pre;
+					overflow-x: auto;
+					margin-bottom: 1em;
+					position: relative;
+					text-align: left;
+				">
+					<button onclick="copyFixedCode()" style="
+						position: absolute;
+						top: 10px;
+						right: 10px;
+						background-color: #007acc;
+						color: white;
+						border: none;
+						border-radius: 4px;
+						padding: 4px 8px;
+						cursor: pointer;
+						font-size: 12px;
+					">\u{1F4CB} Copy</button>
+					${fixed_code.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
+				</div>
 				<h3>\u{1F527} Apply Fix:</h3>
 				<button onclick="applyFix()" style="
 					background-color: #007acc;
@@ -15335,7 +15487,7 @@ ${explain}`);
 					transition: background-color 0.3s ease;
 				" onmouseover="this.style.backgroundColor='#005a9e'"
 				onmouseout="this.style.backgroundColor='#007acc'">
-					\u{1F4BE} Apply wingman fixes
+					\u{1F4BE} Apply Wingman Fixes
 				</button>`;
       }
       panel.webview.html = `
@@ -15343,11 +15495,21 @@ ${explain}`);
             <body>
                 ${htmlContent}
                 <script>
-                    const vscode = acquireVsCodeApi();
-                    function applyFix() {
-                        vscode.postMessage({ command: 'applyFix' });
-                    }
-                </script>
+					const vscode = acquireVsCodeApi();
+
+					function applyFix() {
+						vscode.postMessage({ command: 'applyFix' });
+					}
+
+					function copyFixedCode() {
+						const codeText = \`${fixed_code.replace(/`/g, "\\`")}\`;
+						navigator.clipboard.writeText(codeText).then(() => {
+							alert('\u2705 Copied to clipboard!');
+						}).catch(err => {
+							alert('\u274C Copy failed: ' + err);
+						});
+					}
+				</script>
             </body>
             </html>
         `;
@@ -15369,6 +15531,16 @@ ${explain}`);
       updateStatusBar("Idle" /* Idle */);
     }
   });
+  async function waitForSecret(key, maxAttempts = 5, delay = 500) {
+    for (let i = 0; i < maxAttempts; i++) {
+      const value = await context.secrets.get(key);
+      if (value) {
+        return value;
+      }
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+    return void 0;
+  }
   const setLLMProvider = vscode.commands.registerCommand("wingman.setLLMProvider", async () => {
     const providers = ["GOOGLE"];
     const provider = await vscode.window.showQuickPick(
@@ -15386,10 +15558,10 @@ ${explain}`);
   });
   const setLLMModel = vscode.commands.registerCommand("wingman.setLLMModel", async () => {
     let models = [];
-    let provider = await context.secrets.get("provider");
+    let provider = await waitForSecret("provider");
     if (!provider) {
       await vscode.commands.executeCommand("wingman.setLLMProvider");
-      provider = await context.secrets.get("provider");
+      provider = await waitForSecret("provider");
     }
     if (provider === "GOOGLE") {
       models = [
@@ -15417,10 +15589,10 @@ ${explain}`);
     await context.secrets.store("model", model);
   });
   const setAPIKey = vscode.commands.registerCommand("wingman.setAPIKey", async () => {
-    let provider = await context.secrets.get("provider");
+    let provider = await waitForSecret("provider");
     if (!provider) {
       await vscode.commands.executeCommand("wingman.setLLMProvider");
-      provider = await context.secrets.get("provider");
+      provider = await waitForSecret("provider");
     }
     const api_key = await vscode.window.showInputBox({
       prompt: `Enter your ${provider}_API_KEY`,
@@ -15433,6 +15605,22 @@ ${explain}`);
     }
     await context.secrets.store(`${provider}_API_KEY`, api_key);
   });
+  const resetSecrets = vscode.commands.registerCommand("wingman.resetSecrets", async () => {
+    const confirm = await vscode.window.showWarningMessage(
+      "Are you sure you want to reset all Wingman secrets?",
+      { modal: true },
+      "Yes",
+      "No"
+    );
+    if (confirm === "No") {
+      return;
+    }
+    const keys = ["provider", "model", "GOOGLE_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY"];
+    for (const key of keys) {
+      await context.secrets.delete(key);
+    }
+    vscode.window.showInformationMessage("Wingman secrets have been reset.");
+  });
   context.subscriptions.push(statusBar);
   context.subscriptions.push(askWingman);
   context.subscriptions.push(generateTestcases);
@@ -15441,6 +15629,7 @@ ${explain}`);
   context.subscriptions.push(setAPIKey);
   context.subscriptions.push(setLLMModel);
   context.subscriptions.push(setLLMProvider);
+  context.subscriptions.push(resetSecrets);
 }
 function deactivate() {
 }
