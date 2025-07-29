@@ -11,20 +11,20 @@ Because real devs don’t want AI writing their code — they want AI helping th
 
 ### 1. Code Walkthrough  
 Understand what a piece of code is doing, step by step. Select the code you want explained — Wingman reads your selection and breaks it down in plain language, helping you grasp logic, flow, and potential pitfalls.  
-<video controls src="assets/codewalkthrough.mp4" title="Code Walkthrough"></video>
+<video controls src="https://raw.githubusercontent.com/RohanVarmaRagula/wingman/main/assets/codewalkthrough.mp4" title="Code Walkthrough"></video>
 
 ### 2. Generate Testcases  
 Wingman generates sample test cases for your functions or selected code — right in your editor.  
 Support for edge cases and property-based testing is coming soon.  
-<video controls src="assets/generatetestcases.mp4" title="Generate Testcases"></video>
+<video controls src="https://raw.githubusercontent.com/RohanVarmaRagula/wingman/main/assets/generatetestcases.mp4" title="Generate Testcases"></video>
 
 ### 3. Explain Errors  
 Wingman reads your terminal output, stack traces, or compile-time errors and explains what went wrong — in English.  
-<video controls src="assets/exaplainerrors.mp4" title="Explain Errors"></video>
+<video controls src="https://raw.githubusercontent.com/RohanVarmaRagula/wingman/main/assets/explainerrors.mp4" title="Explain Errors"></video>
 
 ### 4. Suggest Fixes  
 Wingman analyzes your code and its errors to suggest contextual, intelligent fixes — and teaches you *why* it works.  
-<video controls src="assets/suggestfixes.mp4" title="Suggest Fixes"></video>
+<video controls src="https://raw.githubusercontent.com/RohanVarmaRagula/wingman/main/assets/suggestfixes.mp4" title="Suggest Fixes"></video>
 
 ---
 
