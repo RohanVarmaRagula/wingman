@@ -13,4 +13,7 @@ vsc-extension-quickstart.md
 **/*.ts
 **/.vscode-test.*
 backend/
-assets/
+assets/codewalkthrough.mp4
+assets/explainerrors.mp4
+assets/generatetestcases.mp4
+assets/suggestfixes.mp4

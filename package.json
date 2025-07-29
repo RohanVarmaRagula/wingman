@@ -2,7 +2,7 @@
   "name": "WingmanVS",
   "displayName": "WingmanVS",
   "description": "Wingman is your personal AI debugging assistant in VS Code. It analyzes code snippets, and error messages, then explains issues, suggests fixes, and even generates test cases — all powered by LLMs. Let your Wingman handle the debugging while you focus on building.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "engines": {
     "vscode": "^1.101.0"
   },
